@@ -23,6 +23,78 @@ static GtkWidget *counter_label;
 static GtkWidget *mode_label;
 static GtkWidget *spin_button;
 
+// Forward declarations
+void start_clicked(GtkWidget *widget, gpointer data);
+void pause_clicked(GtkWidget *widget, gpointer data);
+void reset_clicked(GtkWidget *widget, gpointer data);
+
+// Widget creation functions
+GtkWidget* create_centered_label(const char *text) {
+    GtkWidget *lbl = gtk_label_new(text);
+    gtk_widget_set_halign(lbl, GTK_ALIGN_CENTER);
+    return lbl;
+}
+
+GtkWidget* create_main_window() {
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Pomodoro Timer");
+    gtk_window_set_default_size(GTK_WINDOW(window), 300, 250);
+    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    return window;
+}
+
+GtkWidget* create_duration_controls() {
+    GtkWidget *duration_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    GtkWidget *duration_label = gtk_label_new("Work Duration (min):");
+    
+    spin_button = gtk_spin_button_new_with_range(5, 60, 1);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_button), 25);
+    
+    gtk_box_pack_start(GTK_BOX(duration_box), duration_label, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(duration_box), spin_button, FALSE, FALSE, 0);
+    
+    return duration_box;
+}
+
+GtkWidget* create_control_buttons() {
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    
+    GtkWidget *start_button = gtk_button_new_with_label("Start");
+    GtkWidget *pause_button = gtk_button_new_with_label("Pause");
+    GtkWidget *reset_button = gtk_button_new_with_label("Reset");
+    
+    g_signal_connect(start_button, "clicked", G_CALLBACK(start_clicked), NULL);
+    g_signal_connect(pause_button, "clicked", G_CALLBACK(pause_clicked), NULL);
+    g_signal_connect(reset_button, "clicked", G_CALLBACK(reset_clicked), NULL);
+    
+    gtk_box_pack_start(GTK_BOX(hbox), start_button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), pause_button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), reset_button, TRUE, TRUE, 0);
+    
+    return hbox;
+}
+
+// Layout assembly function
+GtkWidget* create_main_layout() {
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 20);
+    
+    // Create and store global widget references
+    mode_label = create_centered_label("Work Session");
+    label = create_centered_label("25:00");
+    counter_label = create_centered_label("Sessions Completed: 0");
+    
+    // Pack widgets into layout
+    gtk_box_pack_start(GTK_BOX(vbox), mode_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), counter_label, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), create_duration_controls(), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), create_control_buttons(), FALSE, FALSE, 0);
+    
+    return vbox;
+}
+
 // 🔔 Play sound using external command (portable logic)
 void play_sound() {
 #if defined(__APPLE__)
@@ -120,54 +192,16 @@ void reset_clicked(GtkWidget *widget, gpointer data) {
 
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
-
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Pomodoro Timer");
-    gtk_window_set_default_size(GTK_WINDOW(window), 300, 250);
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_container_set_border_width(GTK_CONTAINER(vbox), 20);
-    gtk_container_add(GTK_CONTAINER(window), vbox);
-
-    mode_label = gtk_label_new("Work Session");
-    gtk_widget_set_halign(mode_label, GTK_ALIGN_CENTER);
-    gtk_box_pack_start(GTK_BOX(vbox), mode_label, FALSE, FALSE, 5);
-
-    label = gtk_label_new("25:00");
-    gtk_widget_set_halign(label, GTK_ALIGN_CENTER);
-    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 5);
-
-    counter_label = gtk_label_new("Sessions Completed: 0");
-    gtk_widget_set_halign(counter_label, GTK_ALIGN_CENTER);
-    gtk_box_pack_start(GTK_BOX(vbox), counter_label, FALSE, FALSE, 5);
-
-    GtkWidget *duration_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), duration_box, FALSE, FALSE, 0);
-    GtkWidget *duration_label = gtk_label_new("Work Duration (min):");
-    gtk_box_pack_start(GTK_BOX(duration_box), duration_label, FALSE, FALSE, 0);
-    spin_button = gtk_spin_button_new_with_range(5, 60, 1);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_button), 25);
-    gtk_box_pack_start(GTK_BOX(duration_box), spin_button, FALSE, FALSE, 0);
-
-    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-
-    GtkWidget *start_button = gtk_button_new_with_label("Start");
-    GtkWidget *pause_button = gtk_button_new_with_label("Pause");
-    GtkWidget *reset_button = gtk_button_new_with_label("Reset");
-
-    g_signal_connect(start_button, "clicked", G_CALLBACK(start_clicked), NULL);
-    g_signal_connect(pause_button, "clicked", G_CALLBACK(pause_clicked), NULL);
-    g_signal_connect(reset_button, "clicked", G_CALLBACK(reset_clicked), NULL);
-
-    gtk_box_pack_start(GTK_BOX(hbox), start_button, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), pause_button, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), reset_button, TRUE, TRUE, 0);
-
+    
+    // Declarative UI creation
+    GtkWidget *window = create_main_window();
+    GtkWidget *main_layout = create_main_layout();
+    
+    // Assemble the application
+    gtk_container_add(GTK_CONTAINER(window), main_layout);
     g_timeout_add_seconds(1, update_timer, NULL);
-
+    
+    // Show and run
     gtk_widget_show_all(window);
     gtk_main();
     return 0;
