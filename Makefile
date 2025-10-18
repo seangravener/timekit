@@ -11,13 +11,17 @@ BIN_DIR = bin
 all: pomodoro time_display time_gtk
 
 pomodoro: $(SRC_DIR)/pomodoro.c
-	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $(BIN_DIR)/$@ $< $(GTK_LIBS)
+	@echo "Building pomodoro..."
+	@$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $(BIN_DIR)/$@ $< $(GTK_LIBS)
 
 time_display: $(SRC_DIR)/time_display.c
-	$(CC) $(CFLAGS) -o $(BIN_DIR)/$@ $<
+	@echo "Building time_display..."
+	@$(CC) $(CFLAGS) -o $(BIN_DIR)/$@ $<
 
 time_gtk: $(SRC_DIR)/time_display_gtk.c
-	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $(BIN_DIR)/$@ $< $(GTK_LIBS)
+	@echo "Building time_gtk..."
+	@$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $(BIN_DIR)/$@ $< $(GTK_LIBS)
 
 clean:
-	rm -rf $(BIN_DIR)/*
+	@echo "Cleaning..."
+	@rm -rf $(BIN_DIR)/*
