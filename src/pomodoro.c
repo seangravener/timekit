@@ -30,7 +30,9 @@ void play_sound() {
 #elif defined(_WIN32)
     Beep(750, 300);
 #else
-    system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga &");
+    if (system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga &") == -1) {
+        // Sound playback failed, but continue execution
+    }
 #endif
 }
 
@@ -45,6 +47,7 @@ void update_display() {
 
 // 🕒 Timer loop
 gboolean update_timer(gpointer data) {
+    (void)data; // Unused parameter
     if (running && remaining_seconds > 0) {
         remaining_seconds--;
         update_display();
@@ -84,6 +87,8 @@ gboolean update_timer(gpointer data) {
 }
 
 void start_clicked(GtkWidget *widget, gpointer data) {
+    (void)widget;
+    (void)data;  
     if (!running && remaining_seconds == 0) {
         remaining_seconds = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin_button)) * 60;
         current_mode = MODE_WORK;
@@ -93,10 +98,14 @@ void start_clicked(GtkWidget *widget, gpointer data) {
 }
 
 void pause_clicked(GtkWidget *widget, gpointer data) {
+    (void)widget;
+    (void)data;  
     running = FALSE;
 }
 
 void reset_clicked(GtkWidget *widget, gpointer data) {
+    (void)widget;
+    (void)data;  
     running = FALSE;
     session_count = 0;
     current_mode = MODE_WORK;
